@@ -21,10 +21,10 @@ export async function POST(req: Request) {
     throw new Error("Missing WEBHOOK_SECRET in environment variables");
   }
 
-  const headerPayload = headers();
-  const svixId = (await headerPayload).get("svix-id") || "";
-  const svixTimestamp = (await headerPayload).get("svix-timestamp") || "";
-  const svixSignature = (await headerPayload).get("svix-signature") || "";
+  const headerPayload = await headers();
+  const svixId = headerPayload.get("svix-id") || "";
+  const svixTimestamp = headerPayload.get("svix-timestamp") || "";
+  const svixSignature = headerPayload.get("svix-signature") || "";
 
   if (!svixId || !svixTimestamp || !svixSignature) {
     return new Response("Missing required Svix headers", { status: 400 });
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   }
 
   const { id, email_addresses, image_url, first_name, last_name, username } =
-    evt.data as ClerkEventData || {};
+    (evt.data as ClerkEventData) || {};
 
   if (!id) {
     return new Response("Invalid event data: Missing `id`", { status: 400 });
@@ -54,11 +54,11 @@ export async function POST(req: Request) {
 
   const user = {
     clerkId: id,
-    email: email_addresses?.[0]?.email_address || null,
-    username: username || null,
-    firstName: first_name || null,
-    lastName: last_name || null,
-    photo: image_url || null,
+    email: email_addresses?.[0]?.email_address || "",
+    username: username || "",
+    firstName: first_name || "N/A",
+    lastName: last_name || "N/A",
+    photo: image_url || "",
   };
 
   try {
